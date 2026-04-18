@@ -40,9 +40,9 @@
             </div>
 
             <!-- Пагинация -->
-{{--            <div class="mt-10">--}}
-{{--                {{ $products->links() }}--}}
-{{--            </div>--}}
+            <div class="mt-10">
+                {{ $products->links() }}
+            </div>
 
         </div>
     </div>

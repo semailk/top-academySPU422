@@ -3,10 +3,10 @@
 @section('content')
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-white">Категории товаров</h1>
-            <a href="{{ route('categories.create') }}"
+            <h1 class="text-3xl font-bold text-white">Бренды</h1>
+            <a href="{{ route('brands.create') }}"
                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                + Создать категорию
+                + Создать бренд
             </a>
         </div>
 
@@ -22,42 +22,33 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse($categories as $category)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            @forelse($brands as $brand)
                 <div class="bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition">
                     <div class="p-6">
                         <h2 class="text-xl font-bold text-white mb-2">
-                            {{ $category->name }}
+                            {{ $brand->name }}
                         </h2>
 
-                        @if($category->children->count() > 0)
-                            <div class="mb-3">
-                                <p class="text-gray-400 text-sm mb-1">Подкатегории:</p>
-                                <div class="flex flex-wrap gap-1">
-                                    @foreach($category->children as $child)
-                                        <span class="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded">
-                                        {{ $child->name }}
-                                    </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
+                        <div class="text-gray-400 text-sm mb-4">
+                            Товаров: {{ $brand->products()->count() }}
+                        </div>
 
-                        <div class="flex justify-between items-center mt-4">
-                            <a href="{{ route('categories.show', $category) }}"
+                        <div class="flex justify-between items-center">
+                            <a href="{{ route('brands.show', $brand) }}"
                                class="text-blue-400 hover:text-blue-300 text-sm">
                                 Подробнее →
                             </a>
 
                             <div class="flex gap-2">
-                                <a href="{{ route('categories.edit', $category) }}"
+                                <a href="{{ route('brands.edit', $brand) }}"
                                    class="text-yellow-400 hover:text-yellow-300 text-sm">
                                     Редактировать
                                 </a>
 
-                                <form action="{{ route('categories.destroy', $category) }}"
+                                <form action="{{ route('brands.destroy', $brand) }}"
                                       method="POST"
-                                      onsubmit="return confirm('Удалить категорию «{{ $category->name }}»?')">
+                                      onsubmit="return confirm('Удалить бренд «{{ $brand->name }}»? Товары этого бренда останутся без бренда.')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-400 hover:text-red-300 text-sm">
@@ -70,9 +61,9 @@
                 </div>
             @empty
                 <div class="col-span-full text-center py-12">
-                    <p class="text-gray-400 text-lg">Нет категорий</p>
-                    <a href="{{ route('categories.create') }}" class="text-blue-400 hover:text-blue-300 mt-2 inline-block">
-                        Создать первую категорию
+                    <p class="text-gray-400 text-lg">Нет брендов</p>
+                    <a href="{{ route('brands.create') }}" class="text-blue-400 hover:text-blue-300 mt-2 inline-block">
+                        Создать первый бренд
                     </a>
                 </div>
             @endforelse

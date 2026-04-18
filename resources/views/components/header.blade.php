@@ -53,12 +53,68 @@
                     <span id="cart-count" class="absolute -top-1 -right-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
                 </a>
 
-                <a href="#" class="flex items-center gap-x-2 bg-gray-50 px-4 py-2.5 rounded-2xl hover:bg-orange-50 transition-all group">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600 group-hover:text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7" />
-                    </svg>
-                    <span class="hidden sm:block text-sm font-semibold text-gray-700 group-hover:text-orange-500">Account</span>
-                </a>
+                <!-- Auth Section -->
+                <div class="flex items-center gap-x-3">
+                    @guest
+                        <!-- Не авторизован -->
+                        <a href="{{ route('login') }}"
+                           class="flex items-center gap-x-2 bg-gray-50 hover:bg-orange-50 px-5 py-2.5 rounded-2xl transition-all group">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600 group-hover:text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7" />
+                            </svg>
+                            <span class="hidden sm:block text-sm font-semibold text-gray-700 group-hover:text-orange-500">
+                Войти
+            </span>
+                        </a>
+
+                        <a href="{{ route('register') }}"
+                           class="flex items-center gap-x-2 bg-black text-white hover:bg-zinc-800 px-6 py-2.5 rounded-2xl transition-all font-semibold text-sm">
+                            Регистрация
+                        </a>
+
+                    @else
+                        <!-- Авторизован -->
+                        <div class="relative">
+                            <button id="user-menu-button"
+                                    onclick="toggleUserDropdown()"
+                                    class="flex items-center gap-x-2 bg-gray-50 hover:bg-orange-50 px-5 py-2.5 rounded-2xl transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7" />
+                                </svg>
+                                <span class="hidden sm:block text-sm font-semibold text-gray-700">
+                    {{ Auth::user()->name }}
+                </span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <!-- Дропдаун -->
+                            <div id="user-dropdown"
+                                 class="hidden absolute right-0 mt-3 w-56 bg-white rounded-3xl shadow-2xl border border-zinc-100 py-2 z-50 overflow-hidden">
+
+                                <div class="px-6 py-4 border-b border-zinc-100">
+                                    <p class="font-semibold text-black">{{ Auth::user()->name }}</p>
+                                    <p class="text-xs text-zinc-500 mt-0.5">{{ Auth::user()->email }}</p>
+                                </div>
+
+                                <a href="#"
+                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                   class="flex items-center gap-x-3 px-6 py-3.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4V7m-4 4V7" />
+                                    </svg>
+                                    Выйти
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Форма выхода -->
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                            @csrf
+                        </form>
+                    @endguest
+                </div>
             </div>
         </div>
 
@@ -124,3 +180,22 @@
         </nav>
     </div>
 </header>
+
+<script>
+    function toggleUserDropdown() {
+        const dropdown = document.getElementById('user-dropdown');
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Закрывать дропдаун при клике вне меню
+    document.addEventListener('click', function(event) {
+        const button = document.getElementById('user-menu-button');
+        const dropdown = document.getElementById('user-dropdown');
+
+        if (button && dropdown) {
+            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        }
+    });
+</script>

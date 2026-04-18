@@ -7,7 +7,7 @@
     <title>Electro - Premium Electronics Store</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-black flex flex-col min-h-screen">
+<body>
 @include('components.header')
 
 <main class="flex-grow">
@@ -17,3 +17,4 @@
 @include('components.footer')
 </body>
 </html>
+
