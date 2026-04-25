@@ -10,13 +10,13 @@ class CategoryFactory extends Factory
 {
     public function definition(): array
     {
-        $name = $this->faker->unique()->word();
-        $slug = Str::slug($name);
+        $name=$this->faker->unique()->word();
+        $slug=Str::slug($name);
 
         return [
-            'name' => $name,
-            'slug' => $slug,
-            'active' => true,
+            'name'=>$name,
+            'slug'=>$slug,
+            'active'=>true,
         ];
     }
 }

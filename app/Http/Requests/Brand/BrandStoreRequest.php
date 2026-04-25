@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Requests\Category;
+namespace App\Http\Requests\Brand;
 
-use App\Rules\CountCategoryRule;
 use App\Rules\RussianCharsRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CategoryStoreRequest extends FormRequest
+class BrandStoreRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
@@ -16,9 +19,8 @@ class CategoryStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required','string','min:3','max:255','unique:categories,name', new RussianCharsRule(70, 'Название категории')],
-            'parent_id' => ['nullable','exists:categories,id', new CountCategoryRule()],
-            'active' => 'nullable|boolean',
+            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:brands,name', new RussianCharsRule(70, "Название бренда")],
+            'active' => 'sometimes|boolean',
         ];
     }
 

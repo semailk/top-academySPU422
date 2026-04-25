@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Category\CategoryStoreRequest;
 use App\Models\Category;
+use App\Rules\CountCategoryRule;
+use App\Rules\RussianCharsRule;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -11,14 +13,17 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
+    private const int ITEMS_PER_PAGE=7;
     public function index(): View
     {
         $categories = Category::query()
-            ->with('children')
+            ->withTrashed()
+            ->with(['children' => function($query) {
+                $query->withTrashed()->orderBy('name');
+            }])
             ->whereNull('parent_id')
-            ->where('active', true)
-            ->with('children')
-            ->get();
+            ->orderBy('name')
+            ->paginate(self::ITEMS_PER_PAGE);
 
         return view('categories.index', [
             'categories' => $categories
@@ -71,13 +76,9 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, Category $category): RedirectResponse
+    public function update(CategoryStoreRequest $request, Category $category): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'parent_id' => 'nullable|exists:categories,id',
-            'active' => 'sometimes|boolean',
-        ]);
+        $validated = $request->validated();
 
         if ($validated['name'] !== $category->name) {
             $validated['slug'] = Str::slug($validated['name']);
@@ -96,22 +97,85 @@ class CategoryController extends Controller
     {
         $categoryName = $category->name;
 
+        // Проверка на товары
         if ($category->products()->exists()) {
             return redirect()
                 ->route('categories.index')
                 ->with('error', "Нельзя удалить категорию '{$categoryName}', так как у нее есть товары!");
         }
 
-        if ($category->children()->exists()) {
-            return redirect()
-                ->route('categories.index')
-                ->with('error', "Нельзя удалить категорию '{$categoryName}', так как у нее есть подкатегории!");
-        }
+        // Получаем все ID подкатегорий рекурсивно
+        $ids = $this->getAllChildIds($category->id);
 
-        $category->delete();
+        // Добавляем ID текущей категории
+        $ids[] = $category->id;
+
+        // Мягко удаляем все категории разом
+        Category::whereIn('id', $ids)->delete();
 
         return redirect()
             ->route('categories.index')
-            ->with('success', "Категория '{$categoryName}' успешно удалена!");
+            ->with('success', "Категория '{$categoryName}' и все её подкатегории успешно удалены!");
+    }
+
+    /**
+     * Получает ID всех подкатегорий рекурсивно
+     */
+    private function getAllChildIds(int $parentId): array
+    {
+        $ids = [];
+
+        // Получаем прямых потомков
+        $children = Category::where('parent_id', $parentId)->get();
+
+        foreach ($children as $child) {
+            $ids[] = $child->id;
+            // Рекурсивно получаем ID потомков потомков
+            $ids = array_merge($ids, $this->getAllChildIds($child->id));
+        }
+
+        return $ids;
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $category = Category::withTrashed()
+            ->findOrFail($id);
+        $categoryName = $category->name;
+
+        if ($category->trashed()) {
+            $category->restore();
+            return redirect()
+                ->route('categories.index')
+                ->with('success', "Категория'{$categoryName}' успешно восстановлена!");
+        }
+
+        return redirect()
+            ->route('categories.index')
+            ->with('success', "Категория '{$categoryName}' не удалялась!");
+    }
+
+    public function forceDestroy($id): RedirectResponse
+    {
+        $category = Category::withTrashed()
+            ->findOrFail($id);
+        $categoryName = $category->name;
+
+        if ($category->trashed()) {
+            $category->forceDelete();
+            return redirect()
+                ->route('categories.index')
+                ->with('success', "Категория '{$categoryName}' успешно удалена из корзины!");
+        }
+
+        return redirect()
+            ->route('categories.index')
+            ->with('success', "Категория '{$categoryName}' не находится в корзине!");
+    }
+
+    public function trashed(): View
+    {
+        $categories = Category::onlyTrashed()->orderBy('name')->get();
+        return view('categories.trashed', ['categories' => $categories]);
     }
 }
