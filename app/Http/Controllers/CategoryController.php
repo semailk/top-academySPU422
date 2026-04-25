@@ -178,4 +178,11 @@ class CategoryController extends Controller
         $categories = Category::onlyTrashed()->orderBy('name')->get();
         return view('categories.trashed', ['categories' => $categories]);
     }
+
+    public function categoryProducts(Category $category): View
+    {
+        return view('categories.products',
+            ['category' => $category,
+                'products' => $category->products()->paginate(12)]);
+    }
 }

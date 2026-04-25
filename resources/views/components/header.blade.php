@@ -179,7 +179,7 @@
                                     <ul class="space-y-2">
                                         @foreach($category->children as $child)
                                             <li>
-                                                <a href="#"
+                                                <a href="{{ route('categories.category.products', $category->id) }}"
                                                    class="text-gray-500 hover:text-gray-900 text-sm transition block hover:pl-2">
                                                     {{ $child->name }}
                                                 </a>
