@@ -8,6 +8,8 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Country;
 use App\Models\Product;
+use App\Models\ProductImage;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -44,6 +46,27 @@ class ProductController extends Controller
 
     public function store(ProductStoreRequest $productStoreRequest): RedirectResponse
     {
+        $product = Product::query()->find(5);
+
+        dd($product->images()
+//            ->where('image', 'products/test/v9KBzYKuraLAfBam3nyJPDW4IJcRWrp5aMxkJGr3.png')
+            ->whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+            ->toRawSql());
+
+        foreach ($product->images as $image) {
+
+        }
+
+        foreach ($productStoreRequest->file('images_path') as $image) {
+            $filePath = $image->store('products/test', 'public');
+
+            $productImage = new ProductImage();
+            $productImage->product_id = $product->id;
+            $productImage->image = $filePath;
+            $productImage->save();
+        }
+
+        die();
         $validated = $productStoreRequest->validated();
         $validated['slug'] = Str::slug($validated['name']);
 
