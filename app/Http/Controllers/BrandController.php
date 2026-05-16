@@ -7,12 +7,14 @@ use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BrandController extends Controller
 {
-    private const int ITEMS_PER_PAGE=8;
+    private const int ITEMS_PER_PAGE = 8;
+
     public function index(): View
     {
         $brands = Brand::query()
@@ -35,10 +37,13 @@ class BrandController extends Controller
     {
         $validated = $brandStoreRequest->validated();
         $validated['slug'] = Str::slug($validated['name']);
-
+        $imgPath = $brandStoreRequest->file('img_path')->store('brands', 'public');
         $validated['active'] = $brandStoreRequest->has('active');
 
         $brand = Brand::query()->create($validated);
+        $brand->image()->create([
+            'url' => $imgPath,
+        ]);
 
         return redirect()
             ->route('brands.index')
@@ -63,6 +68,21 @@ class BrandController extends Controller
     {
         $validated = $request->validated();
 
+        if ($request->hasFile('img_path')) {
+            if ($brand->image && File::exists('storage/' . $brand->image->url)) {
+                File::delete('storage/' . $brand->image->url);
+            }
+
+            $imgPath = $request->file('img_path')->store('brands', 'public');
+            $brand->image()->updateOrCreate([
+                'imageable_id' => $brand->id,
+                'imageable_type' => Brand::class,
+                ],
+                [
+                    'url' => $imgPath
+                ]);
+        }
+
         if ($validated['name'] !== $brand->name) {
             $validated['slug'] = Str::slug($validated['name']);
         }
@@ -72,7 +92,7 @@ class BrandController extends Controller
         $brand->update($validated);
 
         return redirect()
-            ->route('brands.index')
+            ->back()
             ->with('success', "Бренд '{$brand->name}' успешно обновлен!");
     }
 

@@ -18,8 +18,9 @@ class BrandStoreRequest extends FormRequest
 
     public function rules(): array
     {
+        $brandId = $this->route()->parameter('brand')->id;
         return [
-            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:brands,name', new RussianCharsRule(70, "Название бренда")],
+            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:brands,name,' . $brandId, new RussianCharsRule(70, "Название бренда")],
             'active' => 'sometimes|boolean',
         ];
     }

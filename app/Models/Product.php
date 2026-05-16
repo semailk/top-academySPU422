@@ -53,9 +53,4 @@ class Product extends Model
     {
         return $this->belongsTo(Country::class);
     }
-
-    public function images(): HasMany
-    {
-        return $this->hasMany(ProductImage::class);
-    }
 }
